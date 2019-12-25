@@ -1,0 +1,21 @@
+{
+    "name": "al-one/eloquent-super-relations",
+    "description": "Laravel Eloquent Super Relations",
+    "keywords": ["laravel", "eloquent", "relations"],
+    "authors": [
+        {
+            "name": "Alone",
+            "email": "hi@anlo.ng"
+        }
+    ],
+    "require": {
+        "php": ">=5.6.4",
+        "illuminate/database": "^5.4 || ^6.0",
+        "illuminate/support": "^5.4 || ^6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Alone\\EloquentSuperRelations\\": "src/"
+        }
+    }
+}
