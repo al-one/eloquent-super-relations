@@ -23,19 +23,26 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Alone\EloquentSuperRelations\HasSuperRelations;
 
-class Post extends Model
+class User extends Model
 {
 
     use HasSuperRelations;
 
-    public function comments()
+    public function profile()
     {
-        return $this->hasMany('App\Comment');
+        return $this->hasOne('App\Profile','uid');
     }
 
-    public function eagerLoadComments($relation,$models = [],$where = [])
+    public function eagerLoadProfile($relation,$models = [],$where = [])
     {
         // Get cached data for relation
+        if(!empty($where['uid']))
+        {
+            return cache()->remember("user:profile:{$where['uid']}",86400,function() use($where) {
+                return Profile::find($where['uid']);
+            });
+        }
+        // return null for get from database
         return null;
     }
 
