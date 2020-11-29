@@ -31,6 +31,8 @@ trait HasSuperRelations
         $results  = $this->eagerLoadRelationFromModel($relation, $method, [$this]);
         if(is_null($results)) {
             $results = parent::getRelationshipFromMethod($method);
+        } else {
+            $this->setRelation($method, $results);
         }
 
         return $results;
