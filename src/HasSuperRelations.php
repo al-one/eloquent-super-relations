@@ -6,6 +6,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations;
+use Illuminate\Database\Eloquent\Collection;
 
 trait HasSuperRelations
 {
@@ -37,7 +38,9 @@ trait HasSuperRelations
             || $relation instanceof Relations\MorphOne
             || $relation instanceof Relations\BelongsTo
             ) {
-                $results = $results->first();
+                if($results instanceof Collection) {
+                    $results = $results->first();
+                }
             }
             $this->setRelation($method, $results);
         }
@@ -85,8 +88,10 @@ trait HasSuperRelations
             if($results instanceof Model) {
                 $results = $parent->newCollection([$results]);
             }
-            if($with = $relation->getQuery()->getEagerLoads()) {
-                $results->load($with);
+            if($results instanceof Collection) {
+                if($with = $relation->getQuery()->getEagerLoads()) {
+                    $results->load($with);
+                }
             }
         }
 
