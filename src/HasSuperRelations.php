@@ -4,7 +4,8 @@ namespace Alone\EloquentSuperRelations;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations;
 
 trait HasSuperRelations
 {
@@ -25,13 +26,19 @@ trait HasSuperRelations
     protected function getRelationshipFromMethod($method)
     {
         /**
-         * @var  $relation  Relation
+         * @var  $relation  Relations\Relation
          */
         $relation = $this->$method();
         $results  = $this->eagerLoadRelationFromModel($relation, $method, [$this]);
         if(is_null($results)) {
             $results = parent::getRelationshipFromMethod($method);
         } else {
+            if($relation instanceof Relations\HasOne
+            || $relation instanceof Relations\MorphOne
+            || $relation instanceof Relations\BelongsTo
+            ) {
+                $results = $results->first();
+            }
             $this->setRelation($method, $results);
         }
 
@@ -41,13 +48,13 @@ trait HasSuperRelations
     /**
      * Get a relationship value from parent model.
      *
-     * @param  Relation    $relation
+     * @param  Relations\Relation  $relation
      * @param  string      $name  relationship name
      * @param  array|null  $models
      *
      * @return mixed
      */
-    public function eagerLoadRelationFromModel(Relation $relation, $name, array $models = null)
+    public function eagerLoadRelationFromModel(Relations\Relation $relation, $name, array $models = null)
     {
         $results = null;
         $parent = $relation->getParent();
@@ -66,7 +73,21 @@ trait HasSuperRelations
 
                 return $dat;
             },[]);
+
             $results = $parent->$method($relation, isset($models) ? $models : [$this], $where);
+            if(is_array($results)) {
+                if(is_array(Arr::first($results))) {
+                    $results = $parent->hydrate($results);
+                } else {
+                    $results = $parent->newFromBuilder($results);
+                }
+            }
+            if($results instanceof Model) {
+                $results = $parent->newCollection([$results]);
+            }
+            if($with = $relation->getQuery()->getEagerLoads()) {
+                $results->load($with);
+            }
         }
 
         return $results;

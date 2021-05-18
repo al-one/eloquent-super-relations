@@ -21,6 +21,7 @@ $ composer require al-one/eloquent-super-relations -vvv
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Collection;
 use Alone\EloquentSuperRelations\HasSuperRelations;
 
 class User extends Model
@@ -30,15 +31,17 @@ class User extends Model
 
     public function profile()
     {
-        return $this->hasOne('App\Profile','uid');
+        return $this->hasOne('App\Profile', 'uid');
     }
 
-    public function eagerLoadProfile($relation,$models = [],$where = [])
+    /**
+     * @return  Model|Collection|array|null
+     */
+    public function eagerLoadProfile($relation, $models = [], $where = [])
     {
         // Get cached data for relation
-        if(!empty($where['uid']))
-        {
-            return cache()->remember("user:profile:{$where['uid']}",86400,function() use($where) {
+        if(!empty($where['uid'])) {
+            return cache()->remember("user:profile:{$where['uid']}", 86400, function() use($where) {
                 return Profile::find($where['uid']);
             });
         }
